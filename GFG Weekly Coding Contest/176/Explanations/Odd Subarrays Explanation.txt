@@ -1,0 +1,53 @@
+How many subarrays with an odd number of elements end at position i  ? 
+
+A subarray [L, R] is good if - 
+
+1. L - 1 = R (mod 2)  
+2. Odd Elements[0, L - 1] =/= Odd Elements [0, R] (mod 2)
+
+Let us keep track of frequency (length_parity, odd_element_parity) starting from 0.
+
+For example, f(1, 0) is the number of subarrays starting from 0 which 
+1. Have odd length 
+2. Have an even number of odd elements. 
+
+We can use this to compute the number of good subarrays ending at i. 
+Good_subarrays_ending_at_i = f(same_parity_length,opposite_parity_odd_elements) 
+
+Make an entry for the empty subarray f(0, 0) = 1 for convenience to count subarrays that are equal to the prefix. 
+
+------
+
+class Solution
+{
+  public:
+    long long choose_2(long long n)
+    {
+        return (n*(n - 1))/2;
+    }
+
+    long long countoddSubarrays(int n, vector<int> &A)
+    {
+        vector <vector <int>> no_of_subarrays(2, vector <int> (2, 0));
+        long long answer = 0;
+
+        no_of_subarrays[0][0] = 1;
+
+        int parity_of_odd_elements = 0;
+        for(int i = 0; i < A.size(); i++)
+        {
+            parity_of_odd_elements += (A[i]%2 == 1);
+            parity_of_odd_elements %= 2;
+
+            int length_parity = (i + 1)%2;
+            no_of_subarrays[length_parity][parity_of_odd_elements]++;
+
+            int same_parity_length = length_parity;
+            int opposite_parity_content = 1 - parity_of_odd_elements;
+
+            answer += no_of_subarrays[same_parity_length][opposite_parity_content];
+        }
+
+        return answer;
+    }
+};
