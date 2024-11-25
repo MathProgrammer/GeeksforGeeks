@@ -1,0 +1,20 @@
+We can just iterate to find the smallest power i, such that 2^i > n
+
+The answer is (i - 1)
+
+-----
+
+class Solution {
+  public:
+    int findMaxX(int n) 
+    {
+        int bit = 0; 
+        while( (1 << bit) <= n)
+        {
+            bit++;
+        }
+        
+        bit--;
+        return bit;
+    }
+};
