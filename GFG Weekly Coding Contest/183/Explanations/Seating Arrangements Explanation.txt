@@ -1,0 +1,64 @@
+There is a Mathematical answer to this, but if the expression gets complicated
+to derive, we can binary search for it. 
+
+1. If X single benches are possible, then X - 1 single benches are also possible. 
+2. If X single benches are not possible, then X + 1 single benches are also not possible. 
+
+Let us maintain the invariant that 
+1. >= L single benches are always possible 
+2. <= R single benches are always not possible. 
+
+Initially, L = 0 and R = K. 
+check the corner case for when K single benches are possible at first so 
+the invariant holds good. 
+
+-----
+
+Now let us check the step of a binary search. 
+M = (L  + R)/2 
+
+How to check if M single benches are possible ? 
+
+Let us see if the total capacity is enough to seat all the students. 
+M benches are single and (K - M) are full
+Total capacity = M + (K - M)*capacity 
+Total capacity >= N, for a seating arrangement to be feasible. 
+
+-----
+
+class Solution {
+  public:
+    int findMax(int no_of_benches, int no_of_students, int bench_capacity) 
+    {
+        if(bench_capacity*1LL*no_of_benches < no_of_students*1LL)
+        {
+            return -1;
+        }
+        
+        if(no_of_students <= no_of_benches)
+        {
+            return no_of_students;
+        }
+        
+        int left = 0, right = no_of_benches;
+        //Left <= Answer < Right
+        while(right - left > 1)
+        {
+            int single_benches = (left + right)/2; 
+            
+            int full_benches = no_of_benches - single_benches ; 
+            if(full_benches*1LL*bench_capacity + single_benches >= no_of_students)
+            {
+                left = single_benches ;
+            }
+            else 
+            {
+                right = single_benches;
+            }
+            
+        }
+        
+        int max_single_benches = left;
+        return max_single_benches;
+    }
+};

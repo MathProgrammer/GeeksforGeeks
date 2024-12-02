@@ -1,0 +1,229 @@
+Let us first notice that we can binary search for K. 
+
+1. If there are >= X subarrays who's XOR <= K, there will be >= X subarrays who's XOR <= K + 1 also
+2. If there are not >= X subarrays who's XOR <= K, there won't be >= X subarrays who's XOR <= K - 1
+
+Now, let us see how to count the number of subarrays who's XOR is <= K 
+for a fixed k
+
+----
+
+        int left = 0, right = 1e6; 
+        //Left < K <= Right 
+        while(right - left > 1)
+        {
+            int mid = left + (right - left)/2; 
+            if(count_of_valid_subarrays(prefix_xor, mid) >= no_of_valid_subarrays)
+            {
+                right = mid;
+            }
+            else 
+            {
+                left = mid;
+            }
+        }
+
+-----
+
+If XOR[L, L + 1, ... R - 1, R] <= K 
+Then XOR[1, ... L - 1], ^ XOR[1, .... R] <= K 
+
+Instead of looking at all N^2 subarrays, let us only look at the N prefix-XORs 
+
+How many segments ending at R, have XOR <= K 
+
+Let us look at the binary represenation of K. 
+
+Suppose it is 100100011 
+
+All integers <= K, will match some prefix of K, have a 0 instead of 1 and then 
+any suffix. 
+
+It will be one of the following 
+
+1. 0xxxxxxxx
+2. 1000xxxxx
+3. 10010000x
+4. 100100010
+5. 100100011 = K
+
+----
+
+Suppose we want to know how many integers y with x, form XOR(x, y) <= K 
+
+Let us suppose all integers are in a trie. 
+
+Traverse the trie in such a way that the XOR(x, y) = k 
+
+We will always move in the direction of XOR(x, k), because 
+XOR(x, y) = k => XOR(x, k) = y
+
+1. If the current bit of k  = 0, 
+We need to move in the same direction as the bit of x (1/0)
+
+2. If the current bit of k = 1, 
+We need to move in the opposite direction as the bit of x 
+
+However, when the bit of k = 1, we want to know how many integers y 
+are there such that XOR(x, y) has the current bit 0 (and the prefix matching). 
+This is equal to the size of the subtree in the same direction as XOR(x, k). 
+
+So count += current->child[same_bit]->count;
+
+----
+
+There is a corner case. We want integers <= k, not just < k
+
+When we are in the final bit, add the count of all integers in that cell. 
+
+count += current->count;
+
+----
+
+To implement a Trie, I made a class for a Node and another for a Trie. 
+
+The Trie class implements 2 functions - 
+
+1. Insert n into the trie. 
+2. Given an integer n and X count the number of integers m, in the trie 
+    such that XOR(n, m) <= X 
+
+class Node
+{
+    public:
+    int count;
+    vector <Node*> child;
+    
+    Node()
+    {
+        count = 0;
+        child.resize(2, nullptr);
+    }
+};
+
+class Trie 
+{
+    private : 
+    Node *root;
+    const int NO_OF_BITS = 20;
+    
+    int is_bit_set(int n, int bit)
+    {
+        return ( (n&(1 << bit)) != 0 );
+    }
+    
+    int get_count(Node* current, int opposite)
+    {
+        return current->child[opposite] == nullptr ? 
+            0 : 
+            current->child[opposite]->count;
+    }
+    
+    public :
+    Trie()
+    {
+        root = new Node();
+    }
+    
+    void insert(int n)
+    {
+        //cout << "Inserting " << n << "\n";
+        Node *current = root;
+        for(int bit = NO_OF_BITS; bit >= 0; bit--)
+        {
+            int next_bit = is_bit_set(n, bit);
+            
+            if(current->child[next_bit] == nullptr)
+            {
+                current->child[next_bit] = new Node();
+            }
+            
+            current = current->child[next_bit];
+            current->count++;
+        }
+    }
+    
+    int count_xor_pairs_smaller(int n, int max_xor)
+    {
+        Node* current = root;
+        int pairs = 0; 
+        for(int bit = NO_OF_BITS; bit >= 0; bit--)
+        {
+            if(is_bit_set(max_xor, bit))
+            {
+                int same_bit = is_bit_set(n, bit);
+                pairs += get_count(current, same_bit);
+            }
+            
+            //Traverse the trie towards equality
+            int required_bit = is_bit_set(n^max_xor, bit);
+            if(current->child[required_bit] == nullptr)
+            {
+                break;
+            }
+            current = current->child[required_bit];
+            
+            if(bit == 0)
+            {
+                pairs += current->count;
+            }
+        }
+        
+        return pairs;
+    }
+};
+
+-----
+
+The solution implements a binary search with the help of the prefix XOR. 
+
+
+class Solution 
+{
+  public:
+    int count_of_valid_subarrays(vector <int> &prefix_xor, int max_xor)
+    {
+        Trie trie;
+        int total_valid_subarrays = 0; 
+        for(int i = 0; i < prefix_xor.size(); i++)
+        {
+            total_valid_subarrays += trie.count_xor_pairs_smaller(prefix_xor[i], max_xor);
+            trie.insert(prefix_xor[i]);
+        }
+       
+         return total_valid_subarrays;
+    }
+    
+    int minimizeKForXOR(int no_of_valid_subarrays, vector<int>&A) 
+    {
+        vector <int> prefix_xor; 
+        prefix_xor.push_back(0); 
+        for(int i = 0; i < A.size(); i++)
+        {
+            int new_prefix_xor = prefix_xor.back()^A[i];
+            prefix_xor.push_back(new_prefix_xor);
+        }
+        
+        if(count_of_valid_subarrays(prefix_xor, 0) >= no_of_valid_subarrays)
+        {
+            return 0;
+        }
+        
+        int left = 0, right = 1e6; 
+        //Left < K <= Right 
+        while(right - left > 1)
+        {
+            int mid = left + (right - left)/2; 
+            if(count_of_valid_subarrays(prefix_xor, mid) >= no_of_valid_subarrays)
+            {
+                right = mid;
+            }
+            else 
+            {
+                left = mid;
+            }
+        }
+        
+        return right;
+    }
+};

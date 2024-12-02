@@ -1,0 +1,48 @@
+Instead of simulating each query by XOR-ing every 
+A[i] in [L, R] with X, 
+
+Let us instead think of which queries influence i ? 
+A[i] = XOR() of all X's  which begin before it and end after it. 
+
+Let us keep track of the beginning and ending of each query. 
+
+We can use the fact XOR(x, x) = 0
+
+A[i] = A[i - 1]^queries_beginning[i]
+
+We also have to remove queries which have ended. We can remove a query 
+by XOR-ing with it again
+
+This is the final expression
+
+A[i] = A[i - 1]^queries_beginning[i]^queries_ending[i]
+
+-----
+
+class Solution {
+  public:
+    vector<int> findArray(int n, int k, vector<vector<int>> &ops) {
+        vector <int> queries_beginning(n + 1), queries_ending(n + 1); 
+        for(int i = 0; i < ops.size(); i++)
+        {
+            int left = ops[i][0] - 1, right = ops[i][1] - 1;
+            int value = ops[i][2];
+            queries_beginning[left] ^= value; 
+            queries_ending[right] ^= value;
+        }
+        
+        vector <int> A(n); 
+        for(int i = 0; i < n; i++)
+        {
+            A[i] ^= queries_beginning[i];
+            if(i > 0)
+            {
+                A[i] ^= A[i - 1];
+            }
+            
+            A[i] ^= queries_ending[i];
+        }
+        
+        return A;
+    }
+};

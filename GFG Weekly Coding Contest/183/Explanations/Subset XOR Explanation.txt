@@ -1,0 +1,81 @@
+We will need to exclude at most 1 number. 
+
+Let us look at the number modulo 4 by utilising the following fact 
+
+XOR(1, 2, 3, .... , 4n - 1) = 0, for all integers n. 
+
+-----
+
+Case 1 - n = 4m
+
+XOR(1, 2, ... 4m - 1, 4m) = XOR(0, 4m) = 4m = n 
+
+We don't need to exclude any number in this case. 
+
+-----
+
+Case 2 - n = 4m + 1 
+
+XOR(1, 2, .... 4m, 4m + 1) = XOR(4m, 4m + 1) = 1 
+
+We can simply exclude XOR(1, 4m + 1) = 4m
+
+Answer = (1, 2, 3, .... , n - 2, n)
+
+
+----
+
+Case 3  - n = 4m + 2
+
+XOR(1, 2, .... , 4m + 2) = XOR(1, 4m + 2) = 4m + 3 = n + 1 
+
+Let X = XOR(n + 1, n) = 1 
+
+Answer = (2, 3, .... , n) 
+
+----
+
+Case 4 - n = 4m + 3
+
+XOR(1, 2, ... , 4m + 3) = 0 
+
+We just have to exclude the last integer 
+
+Answer = (1, 2, ... , n - 1)
+
+-----
+
+class Solution {
+  public:
+    vector<int> subsetXOR(int n) 
+    {
+        int excluded_number = 0;
+        switch(n%4)
+        {
+            case 0 : excluded_number = 0; 
+                     break;
+                     
+            case 1 : excluded_number = n^1;
+                     break;
+                     
+             case 2 : //(n + 1)^n = 1
+                     excluded_number = 1;
+                     break; 
+            
+            case 3 : excluded_number = n;
+        }
+        
+        vector <int> answer; 
+        for(int i = 1; i <= n; i++)
+        {
+            if(i == excluded_number)
+            {
+                continue;
+            }
+            
+            answer.push_back(i);
+        }
+        
+        return answer;
+    }
+};
