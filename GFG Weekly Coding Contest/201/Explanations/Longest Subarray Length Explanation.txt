@@ -1,0 +1,74 @@
+A good subarray is a subarray where 
+
+Max{A} <= Length{A} 
+
+----
+
+Instead of iterating over every subarray, let us iterate over every element 
+and check the length of the largest subarray where A[i] is the maximum in. 
+
+Let L[i] denote the first element to the left > A[i] 
+and R[i] denote the first element to the right > A[i] 
+
+The length of the largest subarray where A[i] is the maximum is R[i] - L[i] 
+
+If A[i] <= R[i] - L[i], then it is a good subarray. 
+
+-----
+
+Now, the question is how to find the L[i] and R[i] for every element ? 
+
+We can do so with a stack !
+
+Pop out all elements of the stack till the top of the stack is > A[i] 
+This will be the first element on the left that is > A[i]
+
+-----
+
+class Solution {
+  public:
+    int longestSubarray(vector<int>& A) 
+    {
+        const int oo = 1e9 + 9;
+        stack <pair <int, int> > left; 
+        vector <int> left_max(A.size());
+        left.push(make_pair(-1, oo));
+        for(int i = 0; i < A.size(); i++)
+        {
+            while(A[i] >= left.top().second)
+            {
+                left.pop(); 
+            }
+            
+            left_max[i] = left.top().first + 1; 
+            left.push(make_pair(i, A[i]));
+        }
+        
+        stack <pair <int, int> > right; 
+        vector <int> right_max(A.size() + 1);
+        right.push(make_pair(A.size(), oo));
+        for(int i = A.size() - 1; i >= 0; i--)
+        {
+            while(A[i] >= right.top().second)
+            {
+                right.pop(); 
+            }
+            
+            right_max[i] = right.top().first - 1; 
+            right.push(make_pair(i, A[i]));
+        }
+        
+        int answer = 0; 
+        for(int i = 0; i < A.size(); i++)
+        {
+            int subarray_where_this_is_maximum = right_max[i] - left_max[i] + 1; 
+            if(subarray_where_this_is_maximum >= A[i])
+            {
+                answer = max(answer, subarray_where_this_is_maximum);
+            }
+        }
+        
+        return answer;
+        
+    }
+};
