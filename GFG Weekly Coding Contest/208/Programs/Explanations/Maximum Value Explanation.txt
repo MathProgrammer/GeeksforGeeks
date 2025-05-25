@@ -1,0 +1,26 @@
+When we choose 3 integers A[i], A[j] and A[k], 
+
+Let us sort them in order first 
+
+A[i] <= A[j] <= A[k] 
+
+|A[i] - A[j]| + |A[j] - A[k]| + |A[k] - A[i]| 
+
+= 2*(A[k] - A[i])
+
+The value of the sum only depends on A[i] and A[k] !
+This is a remarkable fact. 
+
+It is maximized when we choose the smallest and largest element of the array. 
+
+-----
+
+class Solution {
+  public:
+    int maximumValue(vector<int>& A) {
+        sort(A.begin(), A.end()); 
+        
+        return 2*(A.back() - A[0]);
+        
+    }
+};
